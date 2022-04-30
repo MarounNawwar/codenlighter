@@ -2,8 +2,15 @@
 
 import("Route");
 
-//Routing for the default Page
-Route::set("index.php",function(){
-    //Implement Here the Controller View Creator
+// List all routes to be accessed in the web app Here
+// @param 1 : Route(s) allowed
+// @param 2 : Behavior/Logic made if route matched  || file name to access 
+
+
+//Routing for the default landing Pages
+Route::set(["index.php",'/'],"homepage");
+
+//Single route destination example
+Route::set("about",function(){
     
 });
