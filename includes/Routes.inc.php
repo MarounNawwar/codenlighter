@@ -14,3 +14,7 @@ Route::set(["index.php",'/'],"homepage");
 Route::set("about",function(){
     
 });
+
+Route::set("test",function(){
+    require_once("./Views/test.php");
+});
