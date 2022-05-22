@@ -171,23 +171,68 @@ class DataBase{
 
     }
 
+    private function validate_arguments($query,$values = []){
+
+        $inside_brackets = $arguments_ctr = $inside_argument = $ticks_ctr = 0;
+
+        //TODO: Count the number of argument and compare to the number of values (arguments > 1)
+        //TODO: Count the number of () and ` and check if they're correct
+        for($i = 0; $i < strlen($query); $i++){
+            
+            if($query[$i] == "("){
+                
+                if($inside_brackets || ($ticks_ctr)%2 != 0){ 
+                    return false;
+                }
+                $inside_brackets = 1;
+
+            }elseif($query[$i] == "`"){ 
+                $ticks_ctr++; 
+            }elseif($query[$i] == ")"){
+                if(!$inside_brackets || !(($ticks_ctr)%2)){
+                    return false;
+                }
+                $inside_brackets = 0;
+            }elseif($query[$i] == "?" && $inside_brackets && (($ticks_ctr)%2 == 0) || $inside_argument $inside_brackets && (($ticks_ctr)%2 == 0)){
+
+                $arguments_ctr++;
+            
+            }
+        }   
+
+    }
+
     // Function to insert to database
     // @param 1: Query that is targetted 
     // @param 2: Values expected
     public function insert_on($query,$values = []){
 
+        //This Regular expression allows to make sure that the query has a valid structure;
+        $insert_pattern_1 = "/INSERT INTO[ ]*[`]*[a-zA-z0-9_]*[`]*[ ]*\([`a-zA-Z0-9_, ]+\)[ ]*VALUES[ ]*\([a-zA-Z0-9_,?'\"` ]+\)[;]?/i";
+
+        //TODO: We still have to create a regex that is compatible with insert query that contains select built in query
+        $insert_pattern_2 = "/[NOT IMPLEMENTED YET]/";
+
+
         if( gettype($query) !== "string" || gettype($values) !== "array"){ return "BAD_PARAMETERS"; }
 
-        //INSERT INTO `test_table`(`ID`, `name`) VALUES ([value-1],[value-2])
-        //INSERT INTO [a-zA-z_]\([a-zA-Z_,]*\) VALUES \([a-zA-Z_,?]*\)
-        
-        
+        if(preg_match($insert_pattern_1,$query) || preg_match($insert_pattern_2,$query)){
+            
+            //TODO: Filter the parameters passed using regex
+            //TODO: Create an if branch for the mysql only and then execute
+
+
+
+        }else{
+
+            
+
+        }
 
         // $statement = preg_replace('/\w+/','',$query);
 
-        
-
     }
+
 
     //Function that returns true if there at least 1 valid row for a given query of type "SELECT"
     public function hasValidResults($query){
