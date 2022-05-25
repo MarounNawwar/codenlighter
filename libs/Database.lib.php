@@ -171,36 +171,77 @@ class DataBase{
 
     }
 
-    private function validate_arguments($query,$values = []){
+    public function validate_arguments($query,$values = []){ 
+ 
+        $inside_brackets = $arguments_ctr = $parameters_ctr = $brackets_ctr = $inside_argument = $ticks_ctr = 0;
+ 
+        //TODO: Count the number of argument and compare to the number of values (arguments > 1) 
+        //TODO: Count the number of () and ` and check if they're correct 
+        for($i = 0; $i < strlen($query); $i++){ 
+             
+            if($query[$i] == "(" && ($inside_brackets || ($ticks_ctr)%2 != 0)){
 
-        $inside_brackets = $arguments_ctr = $inside_argument = $ticks_ctr = 0;
+                // print "Inside Brackets: ".$inside_brackets."<br/>";
+                // print "Ticks Counter: ".$ticks_ctr."<br/>";
+                // print "RETURN 1: On index ".$i." At character ".$query[$i]."<br/>";
+                return false;
 
-        //TODO: Count the number of argument and compare to the number of values (arguments > 1)
-        //TODO: Count the number of () and ` and check if they're correct
-        for($i = 0; $i < strlen($query); $i++){
-            
-            if($query[$i] == "("){
-                
-                if($inside_brackets || ($ticks_ctr)%2 != 0){ 
-                    return false;
-                }
-                $inside_brackets = 1;
+            }elseif($query[$i] == "(" && !$inside_brackets){
 
-            }elseif($query[$i] == "`"){ 
-                $ticks_ctr++; 
-            }elseif($query[$i] == ")"){
-                if(!$inside_brackets || !(($ticks_ctr)%2)){
-                    return false;
-                }
+                $inside_brackets = 1; 
+                $brackets_ctr++;
+ 
+            }elseif($query[$i] == ")" && (!$inside_brackets || !(($ticks_ctr)%2 == 0))){
+
+                // print "Inside Brackets: ".$inside_brackets."<br/>";
+                // print "Ticks Counter: ".$ticks_ctr."<br/>";
+                // print "RETURN 2: On index ".$i." At character ".$query[$i]."<br/>";
+                return false;
+
+            }elseif($query[$i] == ")" && $inside_brackets && (($ticks_ctr)%2 == 0)){
+
                 $inside_brackets = 0;
-            }elseif($query[$i] == "?" && $inside_brackets && (($ticks_ctr)%2 == 0) || $inside_argument $inside_brackets && (($ticks_ctr)%2 == 0)){
+                $brackets_ctr++; 
+ 
+            }elseif($query[$i] == "`" || $query[$i] == "\"" || $query[$i] == "'"){  
+ 
+                $ticks_ctr++;  
+                if((($ticks_ctr%2) != 0)&&($inside_brackets)){
+                    $inside_argument = 1;
+                } 
 
-                $arguments_ctr++;
-            
+            }elseif(($query[$i] == "?" && $inside_brackets && (($ticks_ctr)%2 == 0)) || ($inside_brackets && ($ticks_ctr)%2 != 0  && $inside_argument)){
+                if(!$inside_argument) {
+                   $arguments_ctr++;
+                }
+                if($query[$i] == "?" && $inside_brackets && (($ticks_ctr)%2 == 0)){
+                    $parameters_ctr++;
+                }
+            }elseif(($query[$i] == "," || $query[$i] == ")") && $inside_brackets && $inside_argument && (($ticks_ctr)%2 == 0)){
+                
+                $arguments_ctr++; 
+                $inside_argument = 0;
+
+            }elseif($inside_brackets && !$inside_argument && (($ticks_ctr)%2 == 0) && !is_numeric($query[$i])){
+ 
+                // print "Inside Brackets: ".$inside_brackets."<br/>";
+                // print "Inside Argument: ".$inside_argument."<br/>";
+                // print "Ticks Counter: ".$ticks_ctr."<br/>";
+                // print "RETURN 3: On index ".$i." At character ".$query[$i]."<br/>";
+                return false;
+             
             }
-        }   
 
-    }
+        }    
+ 
+        // print "Values number = ".sizeof($values)."<br/>";
+        // print "Parameters Counter = ".$parameters_ctr."<br/>";
+        // print "Brackets Counter = ".$brackets_ctr."<br/>";
+        // print "Ticks Counter = ".$ticks_ctr."<br/>";
+        
+        return (sizeof($values) == $parameters_ctr) &&($brackets_ctr%2 == 0)&& ($ticks_ctr%2 == 0);
+ 
+    } 
 
     // Function to insert to database
     // @param 1: Query that is targetted 
@@ -216,7 +257,7 @@ class DataBase{
 
         if( gettype($query) !== "string" || gettype($values) !== "array"){ return "BAD_PARAMETERS"; }
 
-        if(preg_match($insert_pattern_1,$query) || preg_match($insert_pattern_2,$query)){
+        if(preg_match($insert_pattern_1,$query) || preg_match($insert_pattern_2,$query)){s
             
             //TODO: Filter the parameters passed using regex
             //TODO: Create an if branch for the mysql only and then execute
