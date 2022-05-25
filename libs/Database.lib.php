@@ -257,16 +257,12 @@ class DataBase{
 
         if( gettype($query) !== "string" || gettype($values) !== "array"){ return "BAD_PARAMETERS"; }
 
-        if(preg_match($insert_pattern_1,$query) || preg_match($insert_pattern_2,$query)){s
+        if(preg_match($insert_pattern_1,$query) || preg_match($insert_pattern_2,$query)){
             
             //TODO: Filter the parameters passed using regex
             //TODO: Create an if branch for the mysql only and then execute
 
 
-
-        }else{
-
-            
 
         }
 
