@@ -4,13 +4,8 @@
 *   Database Library
 */
 
-class DataBase{
 
-    //TODO: Implement later on from the conf file
-    private static $host = "127.0.0.1";
-    private static $dbName = "codenlighter";
-    private static $userName = "root";
-    private static $password = "";
+class DataBase{
 
     private static $instance;
     private $pdo;
@@ -42,9 +37,14 @@ class DataBase{
     //Private function to connect to the database
     private function connect(){
 
+        $host = get_config_param("hostname");
+        $dbName = get_config_param("DBName");
+        $userName = get_config_param("DBUsername");
+        $password = get_config_param("DBPassword");
+
         try{
 
-            $pdo = new PDO("mysql:host=".self::$host.";dbname=".self::$dbName,self::$userName,self::$password);
+            $pdo = new PDO("mysql:host=".$host.";dbname=".$dbName,$userName,$password);
 
             $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
             $pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
