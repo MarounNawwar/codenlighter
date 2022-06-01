@@ -24,7 +24,7 @@ function import($libName){
     }
 }
 
-function get_config_param($param_name,$default_value = "EXECPTION_NOT_FOUND"){
+function get_config_param($param_name,$default_value = "PARAM_NOT_FOUND"){
 
     $conf = get_configurations_file();
 
