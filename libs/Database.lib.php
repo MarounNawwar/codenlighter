@@ -171,7 +171,7 @@ class DataBase{
 
     }
 
-    public function validate_arguments($query,$values = []){ 
+    public function validate_query_content($query,$values = []){ 
  
         $inside_brackets = $arguments_ctr = $parameters_ctr = $brackets_ctr = $inside_argument = $ticks_ctr = 0;
  

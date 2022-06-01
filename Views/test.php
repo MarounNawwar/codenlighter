@@ -6,7 +6,7 @@
 
     // print_r($conn->get_table_rows_from_db("test_table",[]));
 
-    $rslt = $conn->validate_arguments("INSERT INTO `test`('val1','val2') VALUES('tst','ert');");
+    $rslt = $conn->validate_query_content("INSERT INTO `test`('val1','val2') VALUES('','')");
 
     if($rslt === false){
         echo "Bad Query Structure";
