@@ -4,8 +4,10 @@
 *   Codenlighter Main Library 
 */
 
+import("Log");
+
 function get_configurations_file(){
-    return require('conf/config.php');
+    return require_once('conf/config.php');
 }
 
 function import($libName){
@@ -38,4 +40,8 @@ function get_config_param($param_name,$default_value = "PARAM_NOT_FOUND"){
     
     return $conf[$param_name];
 
+}
+
+function log_write(){
+    
 }

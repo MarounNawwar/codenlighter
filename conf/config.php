@@ -3,6 +3,7 @@
         'hostname' => '127.0.0.1',
         'DBName' => 'codenlighter',
         'DBUsername' => 'root',
-        'DBPassword' => ''
+        'DBPassword' => '',
+        'log_folder' => "../logs/"
     );
 ?>
