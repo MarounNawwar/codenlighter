@@ -4,6 +4,9 @@
         'DBName' => 'codenlighter',
         'DBUsername' => 'root',
         'DBPassword' => '',
-        'log_folder' => "../logs/"
+        'enable_logging' => true,
+        'log_level' => "3",
+        'log_folder' => "../logs/",
+        'Debugging' => true,
     );
 ?>

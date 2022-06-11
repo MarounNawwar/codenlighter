@@ -7,7 +7,7 @@
 import("Log");
 
 function get_configurations_file(){
-    return require_once('conf/config.php');
+    return require('conf/config.php');
 }
 
 function import($libName){
@@ -43,5 +43,6 @@ function get_config_param($param_name,$default_value = "PARAM_NOT_FOUND"){
 }
 
 function log_write(){
-    
+    $handler = Log::get_instance();
+    $handler->log_error("This is a record test",3);
 }
