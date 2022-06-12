@@ -57,37 +57,56 @@ class log {
     // Function that searches for the valid file path of the log path
     // @Param : String that represents the type of the log (WARNING,INFO,ERROR)
     // @Returns: The String value that represents the `log file path` that the log must be written into
-    private function get_log_file_path($log_type = 'default'){
+    private function get_log_file_paths($log_type = 'default'){
 
-        $today_date = date('mdy',time());
+        // TODO : Approve Space Complexity and time Complexity
+
+        $file_paths = array();
+        $needed_file_paths = array();
+        $today_date = date('ymd',time());
         $probable_dirs = [$this->log_folder,'./logs/','./log/','../logs/','./log/','./'];
-
-        if(strtolower($log_type) != 'default' && strtolower($log_type) != 'error'){
-            $log_type = 'default';
+        
+        array_push($needed_file_paths,'default');
+        if(strtolower($log_type) == 'error'){
+            array_push($needed_file_paths,strtolower($log_type));
         }
 
         // Try to find an existing folder from the valid paths if not creates it
         foreach($probable_dirs as $dir){
+            
             if(file_exists($dir) && is_dir($dir)){
+                
                 try{
                     
-                    if(strlen($dir) > 0 && $dir[strlen($dir)-1] != '/') { $dir .='/'; }
+                    foreach($needed_file_paths as $file_path){
+                        
+                        if(strlen($dir) > 0 && $dir[strlen($dir)-1] != '/') { $dir .='/'; }
                     
-                    $new_filepath = $dir.$today_date.'_'.$log_type.'.log';    
-                    $handler = fopen($new_filepath,"a") or new Exception("File Unable to create");
-                    fclose($handler);
-                    
-                    return $new_filepath;
+                        $new_filepath = $dir.$today_date.'_'.$file_path.'.log';    
+                        $handler = fopen($new_filepath,"a") or new Exception("File Unable to create");
+                        fclose($handler);
+                        
+                        array_push($file_paths,$new_filepath);
+
+                    }
 
                 }catch(Exception $e){
                     
                     $e->getMessage();
+                    $file_paths = array();
+                    continue;
 
                 }
+
             }
+
+            if(count($file_paths) == count($needed_file_paths)) {
+                return $file_paths;
+            }
+
         }
 
-        return 'GET_LOG_FILE_EXCEPTION';
+        return 'GET_LOG_FILES_EXCEPTION';
 
     }
 
@@ -107,53 +126,54 @@ class log {
     // @Param 1: String of the file that we want to concatenate to
     // @Param 2: The new record that will be appended to the end of the function
     // @Returns: Exception Message if failed and true statement if the concatenated successfully
-    private function concat_log_to_file($file_path,$record){
+    private function concat_log_to_files($file_paths,$record){
         
-        try{
-            
-            $handler = fopen($file_path,"a") or new Exception("Couldn't Open the log file");
+        foreach($file_paths as $path){
+            try{
+                $handler = fopen($path,"a") or new Exception("Couldn't Open the log file");
+        
+                if(flock($handler,LOCK_UN | LOCK_NB)){
+                    fwrite($handler,$record);
+                    fclose($handler);
+                }else
+                    new Exception("Couldn't lock the log file");
+        
+            }catch(Exception $e){
+                
+                return $e->getMessage();
     
-            if(flock($handler,LOCK_UN | LOCK_NB)){
-                fwrite($handler,$record);
-                fclose($handler);
-            }else
-                new Exception("Couldn't lock the log file");
-    
-        }catch(Exception $e){
-            
-            return $e->getMessage();
-
+            }
         }
 
     } 
 
     // Void Function used to concatenate informations into the default log file
     // @Param 1: Record to add to the file
-    public function log_default($content,$log_level){
+    public function log_default($content,$log_level = 3){
 
         if(!$this->logging_enabled || $log_level > $this->log_level) return;
 
-        $file_path = $this->get_log_file_path();        
+        $file_paths = $this->get_log_file_paths();        
 
-        if($file_path == 'GET_LOG_FILE_EXCEPTION') return;
+        if($file_paths == 'GET_LOG_FILES_EXCEPTION') return;
 
         $log = $this->generate_new_log_record($content);
-        $this->concat_log_to_file($file_path,$log);
+        $this->concat_log_to_files($file_paths,$log);
 
     }
 
     // Void Function used to concatenate informations into the default log file
     // @Param 1: Record to add to the file
-    public function log_error($content,$log_level){
+    public function log_error($content,$log_level = 3){
 
         if(!$this->logging_enabled || $log_level > $this->log_level) return;
 
-        $file_path = $this->get_log_file_path("error");
+        $file_paths = $this->get_log_file_paths("error");
 
-        if($file_path == 'GET_LOG_FILE_EXCEPTION') return;
+        if($file_paths == 'GET_LOG_FILES_EXCEPTION') return;
 
-        $log = $this->generate_new_log_record($content);
-        $this->concat_log_to_file($file_path,$log);
+        $log = $this->generate_new_log_record($content,"ERROR");
+        $this->concat_log_to_files($file_paths,$log);
 
     }
     
