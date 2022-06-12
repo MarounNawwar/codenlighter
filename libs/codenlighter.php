@@ -16,7 +16,7 @@ function import($libName){
     $libraryPath =  "./libs/" . $libName .".lib" . $extension;
 
     if(file_exists($libName)){
-    
+
         require_once($libName);       
     
     }else if(file_exists($libraryPath)){
@@ -29,7 +29,7 @@ function import($libName){
 function get_config_param($param_name,$default_value = "PARAM_NOT_FOUND"){
 
     $conf = get_configurations_file();
-
+    
     if(!array_key_exists($param_name,$conf)){ 
         return $default_value; 
     }
@@ -37,7 +37,7 @@ function get_config_param($param_name,$default_value = "PARAM_NOT_FOUND"){
     if(gettype($conf[$param_name]) == "string"){
         return strval($conf[$param_name]);
     }
-    
+
     return $conf[$param_name];
 
 }

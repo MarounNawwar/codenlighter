@@ -14,6 +14,6 @@
     //     echo "Correct Query Structure";
     // }
 
-    // log_write("Test");
+    // log_write();
 
 ?>

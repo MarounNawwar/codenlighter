@@ -4,6 +4,7 @@
 *   Database Library
 */
 
+import("Log");
 
 class DataBase{
 
@@ -22,6 +23,7 @@ class DataBase{
         $cls = static::class;
         
         if (!isset(self::$instance[$cls])) {
+            log_write("Creating Instance of Database...");
             self::$instance[$cls] = new static();
         }
         
@@ -32,18 +34,24 @@ class DataBase{
     public function closeConnection(){
         if(isset($this->pdo)) unset($this->pdo);
         if(isset($instance)) unset($instance);
+        log_write("Connection of Database closed");
     }
 
     //Private function to connect to the database
     private function connect(){
 
         $host = get_config_param("hostname");
+        log_write("Retrieving hostname configuration from config file");
         $dbName = get_config_param("DBName");
+        log_write("Retrieving DBName configuration from config file");
         $userName = get_config_param("DBUsername");
+        log_write("Retrieving DBUsername configuration from config file");
         $password = get_config_param("DBPassword");
+        log_write("Retrieving DBPassword configuration from config file");
 
         try{
 
+            log_write("Connecting to Database...");
             $pdo = new PDO("mysql:host=".$host.";dbname=".$dbName,$userName,$password);
 
             $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
@@ -54,8 +62,10 @@ class DataBase{
         
         }catch(Exception $e){
  
-            throw new Exception($e->getMessage());
-        
+            $errorMsgDetail = "ERROR: ".$e->getMessage();
+            log_error("Connection to Database failed.");
+            log_error($errorMsgDetail,2);
+            return null;
         }
 
     }
@@ -76,6 +86,9 @@ class DataBase{
         //Returns Error if query type invalid
         if(!in_array($query_type,$query_types)){ return "INVALID_QUERY"; }
 
+        $query_log_msg = (count($params) != 0) ? "Executing query: `$query`. Params: (".join(", ",$params).")":"Executing query: `$query`."; 
+        log_write($query_log_msg,2);
+
         switch(strtoupper($query_type)){
             case "select":
             case "Select":
@@ -85,11 +98,15 @@ class DataBase{
                 
                     $statement = $this->pdo->prepare($query);
                     $statement->execute($params);
-                    return $statement->fetchAll();
+                    $rslt = $statement->fetchAll();
+                    log_write("Query fetch result: ".count($rslt),3);
+                    return $rslt;
                 
                 }catch(Exception $e){
 
-                    //TODO: Implement Log Error Here
+                    $errorMsgDetail = "ERROR: ".$e->getMessage();
+                    log_error("SELECT Query Failed....");
+                    log_error($errorMsgDetail,2);
                     return "DB_EXECUTION_ERROR";
                 
                 }
@@ -102,11 +119,17 @@ class DataBase{
                     
                     $statement = $this->pdo->prepare($query);
                     $statement->execute($params);
-                    return $this->pdo->lastInsertId();
+                    $rslt = $this->pdo->lastInsertId();
+                    log_write("New inserted row id: $rslt");
+                    return $rslt;
 
                 }catch(Exception $e){
-                    //TODO: Implement Log Error Here
+
+                    $errorMsgDetail = "ERROR: ".$e->getMessage();
+                    log_error("INSERT Query Failed....");
+                    log_error($errorMsgDetail,2);
                     return "DB_EXECUTION_ERROR";
+                
                 }
 
             case "delete":
@@ -117,11 +140,17 @@ class DataBase{
                 
                     $statement = $this->pdo->prepare($query);
                     $statement->execute($params);
-                    return $statement->rowCount();  
+                    $rslt = $statement->rowCount();
+                    log_write("Number of rows affected from delete query: $rslt");
+                    return $rslt;  
                 
                 }catch(Exception $e){
-                    //TODO: Implement Log Error Here
+
+                    $errorMsgDetail = "ERROR: ".$e->getMessage();
+                    log_error("DELETE Query Failed....");
+                    log_error($errorMsgDetail,2);
                     return "DB_EXECUTION_ERROR";
+                
                 }
          
             case "update":
@@ -132,16 +161,29 @@ class DataBase{
                 
                     $statement = $this->pdo->prepare($query);
                     $statement->execute($params);
-                    return $statement->rowCount() > 0;
+                    $rslt = $statement->rowCount() > 0;
+                    if($rslt){
+                        log_write("");
+                    }else{
+
+                    }
+                    return $rslt;
             
                 }catch(Exception $e){           
-                    //TODO: Implement Log Error Here
+
+                    $errorMsgDetail = "ERROR: ".$e->getMessage();
+                    log_error("UPDATE Query Failed....");
+                    log_error($errorMsgDetail,2);
                     return "DB_EXECUTION_ERROR";
+
                 }
-            default: 
-                //TODO: Implement Log Error Here    
+            default:
+
+                log_error("Query Failed.... couldn't find matching type of query for `$query`");
                 return null;
+
         }        
+
     }
 
     // Function to get rows from database
@@ -155,7 +197,13 @@ class DataBase{
         $parameters = (count($parameters) == 0) ? ["*"] : $parameters;
         $paramsCtr = count($parameters);
 
-        if(gettype($parameters) !== "array" || gettype($table) !== "string"){ return "BAD_PARAMETERS";}
+        log_write("Getting rows from table $table.");
+
+        if(gettype($parameters) !== "array" || gettype($table) !== "string"){ 
+            log_error("Bad Parameters sent to get_tables_rows_from_db function");
+            log_error("ERROR: BAD PARAMETERS. Params Sent: $parameters",2);
+            return "BAD_PARAMETERS";
+        }
         
         //Table name cleansing and remove of special characters
         $table = preg_replace('/[\?\@\?\/\.\;\=" "]+/', '', $table);
@@ -167,6 +215,7 @@ class DataBase{
             $query .= (++$cnt !== $paramsCtr)?", ":" FROM ";
         }
         $query .= $table;
+
         return $this->query($query);
 
     }

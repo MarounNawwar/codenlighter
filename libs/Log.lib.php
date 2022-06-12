@@ -82,7 +82,7 @@ class log {
                         
                         if(strlen($dir) > 0 && $dir[strlen($dir)-1] != '/') { $dir .='/'; }
                     
-                        $new_filepath = $dir.$today_date.'_'.$file_path.'.log';    
+                        $new_filepath = $dir.$today_date.'_'.$file_path.'_logs.log';    
                         $handler = fopen($new_filepath,"a") or new Exception("File Unable to create");
                         fclose($handler);
                         
@@ -116,8 +116,14 @@ class log {
     // @Returns: String that matches the structure of the log records
     private function generate_new_log_record($log,$log_type = "INFO"){
 
-        $time  = date('Y-m-d H:i:s',time());
-        return "$time - $log_type - $log\r";
+        $t = microtime(true);
+        $micro = sprintf("%06d",($t - floor($t)) * 1000000);
+        $d = new DateTime( date('Y-m-d H:i:s.'.$micro, $t) );
+        $time = $d->format("Y-m-d H:i:s.u");
+
+        $pid = getmypid();
+
+        return "$time - $pid - $log_type - $log\r";
 
     }
 
