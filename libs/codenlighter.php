@@ -42,14 +42,14 @@ function get_config_param($param_name,$default_value = "PARAM_NOT_FOUND"){
 
 }
 
-function log_write($content,$log_level){
+function log_write($content,$log_level = null){
 
     $handler = Log::get_instance();
     $handler->log_default($content,$log_level);
 
 }
 
-function log_error($content,$log_level){
+function log_error($content,$log_level = null){
 
     $handler = Log::get_instance();
     $handler->log_error($content,$log_level);
