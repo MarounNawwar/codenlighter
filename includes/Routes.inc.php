@@ -6,7 +6,6 @@ import("Route");
 // @param 1 : Route(s) allowed
 // @param 2 : Behavior/Logic made if route matched  || file name to access 
 
-
 //Routing for the default landing Pages
 Route::set(["index.php",'/'],"homepage");
 

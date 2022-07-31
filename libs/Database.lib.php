@@ -8,8 +8,8 @@ import("Log");
 
 class DataBase{
 
-    private static $instance;
     private $pdo;
+    private static $instance;
 
     //private constructor
     
@@ -40,33 +40,47 @@ class DataBase{
     //Private function to connect to the database
     private function connect(){
 
-        $host = get_config_param("hostname");
-        log_write("Retrieving hostname configuration from config file");
-        $dbName = get_config_param("DBName");
-        log_write("Retrieving DBName configuration from config file");
-        $userName = get_config_param("DBUsername");
-        log_write("Retrieving DBUsername configuration from config file");
-        $password = get_config_param("DBPassword");
-        log_write("Retrieving DBPassword configuration from config file");
-
-        try{
-
-            log_write("Connecting to Database...");
-            $pdo = new PDO("mysql:host=".$host.";dbname=".$dbName,$userName,$password);
-
-            $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
-            $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE,PDO::FETCH_ASSOC);
-            
-            return $pdo;
+        $db_type = get_config_param("Database");
         
-        }catch(Exception $e){
- 
-            $errorMsgDetail = "ERROR: ".$e->getMessage();
-            log_error("Connection to Database failed.");
-            log_error($errorMsgDetail,2);
-            return null;
+        if($db_type != null && $db_type){
+            log_write("Database Configuration found! Database: $db_type");
+        }else{
+            log_write("No Database Configuration found in conf file! Connection Aborted!");
         }
+
+        if(strtolower($db_type) == strtolower("MySQL")){
+
+            log_write("Retrieving hostname, DBName, DBUsername, DBPassword configurations from config file...");
+            $host = get_config_param("hostname");
+            $dbName = get_config_param("DBName");
+            $userName = get_config_param("DBUsername");
+            $password = get_config_param("DBPassword");
+    
+            try{
+                
+                log_write("Connecting to Database...");
+                $pdo = new PDO("mysql:host=".$host.";dbname=".$dbName,$userName,$password);
+    
+                $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+                $pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+                $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE,PDO::FETCH_ASSOC);
+    
+                log_write("Fetching Database Connection. Connection Type: Database");
+    
+                return $pdo;
+            
+            }catch(Exception $e){
+     
+                $errorMsgDetail = "ERROR: ".$e->getMessage();
+                log_error("Connection to Database failed.");
+                log_error($errorMsgDetail,2);
+                return null;
+            }
+ 
+        }
+        
+        //TODO: Loop through each possible database 
+        return;
 
     }
 
@@ -190,7 +204,7 @@ class DataBase{
     // @param 1: Table Name in database
     // @param 2: Parameters wanted (Not mandatory)
     // @Returns: 2-dimensional array containing fetched rows
-    public function get_table_rows_from_db($table,$parameters = ["*"]){
+    public function get_rows_from_db($table,$parameters = ["*"]){
 
         $cnt = 0;
         $query = "SELECT ";
@@ -288,37 +302,60 @@ class DataBase{
         // print "Brackets Counter = ".$brackets_ctr."<br/>";
         // print "Ticks Counter = ".$ticks_ctr."<br/>";
         
-        return (sizeof($values) == $parameters_ctr) &&($brackets_ctr%2 == 0)&& ($ticks_ctr%2 == 0);
+        return (sizeof($values) == $parameters_ctr) && ($brackets_ctr%2 == 0)&& ($ticks_ctr%2 == 0);
  
     } 
 
     // Function to insert to database
     // @param 1: Query that is targetted 
     // @param 2: Values expected
-    public function insert_on($query,$values = []){
+    public function insert_to($query,$params = []){
+
+        $db_type = "MySQL";
+
+        
+        
+    }
+
+
+    // Function to execute multiple queries
+    // @Param 1: Query to be executed
+    // @Param 2: Params to be fetched
+    public function execute_query($query,$params = []){
+
+        $db_type = "MySQL";
+
+        //TODO: Add Hashing Security for confidential Params
+        //TODO: Integrate the matching logging ins to the function
+
+        if( gettype($query) !== "string" || gettype($params) !== "array"){ return "BAD_PARAMETERS"; }
 
         //This Regular expression allows to make sure that the query has a valid structure;
-        $insert_pattern_1 = "/INSERT INTO[ ]*[`]*[a-zA-z0-9_]*[`]*[ ]*\([`a-zA-Z0-9_, ]+\)[ ]*VALUES[ ]*\([a-zA-Z0-9_,?'\"` ]+\)[;]?/i";
-
-        //TODO: We still have to create a regex that is compatible with insert query that contains select built in query
-        $insert_pattern_2 = "/[NOT IMPLEMENTED YET]/";
-
-
-        if( gettype($query) !== "string" || gettype($values) !== "array"){ return "BAD_PARAMETERS"; }
+        
+        // FIXME: We still have to add to the regex the SQL Keywords in the WHERE Statement in the insert_pattern_2 variable 
+        // FIXME: Make a better regex because special characters should be able to be inserted
+        $insert_pattern_1 = "/INSERT INTO[ ]+[`]*[a-zA-z0-9_]*[`]*[ ]*\([`a-zA-Z0-9_, ]+\)[ ]+VALUES[ ]*\([a-zA-Z0-9_,?'\"` ]+\)[;]?/i";
+        $insert_pattern_2 = "/INSERT INTO[ ]+[`]*[a-zA-z0-9_]*[`]*[ ]*\([`a-zA-Z0-9_, ]+\)[ ]*SELECT[ ]+[a-zA-Z0-9_,?'\"\s+` ]+[ ]+FROM[ ]+[`]*[a-zA-z0-9_]*[ ]*[WHERE[ ]*[a-zA-Z0-9_,?'\"\s+` ]+[ ]*[=]*[ ]*[\"|\']*[a-zA-Z0-9_,?'\"\s+`]*[ ]*]?[;]?/";
 
         if(preg_match($insert_pattern_1,$query) || preg_match($insert_pattern_2,$query)){
             
-            //TODO: Filter the parameters passed using regex
-            //TODO: Create an if branch for the mysql only and then execute
-
-
+            foreach($params as $param){
+                // FIXME: Filter the parameters passed using regex, make a better regex because special characters should be able to be inserted
+                if (!preg_match($param,"/([A-Z0-9])*/i")){
+                    return "BAD VALUES";
+                }
+            }
+            
+            //TODO: Make function to work based on the database connection
+            if(strtolower($db_type) == strtolower("MySQL")){
+                return $this->pdo->query($query,$params);
+            }
 
         }
 
         // $statement = preg_replace('/\w+/','',$query);
 
     }
-
 
     //Function that returns true if there at least 1 valid row for a given query of type "SELECT"
     public function hasValidResults($query){

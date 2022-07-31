@@ -4,7 +4,7 @@
 
     // $conn = Database::getConnection();
 
-    // print_r($conn->get_table_rows_from_db("test_table",[]));
+    // print_r($conn->get_rows_from_db("test_table",[]));
 
     // $rslt = $conn->validate_query_content("INSERT INTO `test`('val1','val2') VALUES('','')");
 
@@ -14,6 +14,10 @@
     //     echo "Correct Query Structure";
     // }
 
-    // log_write();
+    // $rslt2 = $conn->insert_to("")
+
+    // var_dump(read_config());
+
+    echo 'Reached Test';
 
 ?>

@@ -8,7 +8,9 @@ class Route{
 
     //Function to set the valid URL
     private static function access($route,$handler){
-        if($_GET['url'] == $route){
+
+        if((isset($_GET['url']) && $_GET['url'] == $route) || $route == $_SERVER['REQUEST_URI'] ){
+           
             if(is_callable($handler)){
                 $handler->__invoke();
             }else{
@@ -48,7 +50,7 @@ class Route{
     }
 
     public static function set($routes,$function){
-
+        
         if(gettype($routes) === 'array'){
             foreach($routes as $route){
                 self::$validRoutes[] = $route;        
