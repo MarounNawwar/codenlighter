@@ -335,18 +335,22 @@ class DataBase{
         $insert_pattern_2 = "/INSERT INTO[ ]+[`]*[a-zA-z0-9_]*[`]*[ ]*\([`a-zA-Z0-9_, ]+\)[ ]*SELECT[ ]+[a-zA-Z0-9_,?'\"\s+` ]+[ ]+FROM[ ]+[`]*[a-zA-z0-9_]*[ ]*[WHERE[ ]*[a-zA-Z0-9_,?'\"\s+` ]+[ ]*[=]*[ ]*[\"|\']*[a-zA-Z0-9_,?'\"\s+`]*[ ]*]?[;]?/";
         $insert_pattern_3 = "/INSERT INTO[ ]+[`]*[a-zA-z0-9_]*[`]*[ ]*VALUES[ ]*\([a-zA-Z0-9_,?'\"` ]+\)[;]?/i";
         $insert_pattern_4 = "/INSERT INTO[ ]+[`]*[a-zA-z0-9_]*[`]*[ ]*SELECT[ ]+[a-zA-Z0-9_,?'\"\s+` ]+[ ]+FROM[ ]+[`]*[a-zA-z0-9_]*[ ]*[WHERE[ ]*[a-zA-Z0-9_,?'\"\s+` ]+[ ]*[=]*[ ]*[\"|\']*[a-zA-Z0-9_,?'\"\s+`]*[ ]*]?[;]?/";
+        $insert_pattern_5 = "/DELETE FROM[ ]+[`]*[a-zA-z0-9_]*[ ]*[WHERE[ ]*[a-zA-Z0-9_,?'\"\s+` ]+[ ]*[=]*[ ]*[\"|\']*[a-zA-Z0-9_,?'\"\s+`]*[ ]*]?[;]?/";
 
         if(preg_match($insert_pattern_1,$query) || preg_match($insert_pattern_2,$query) 
-        || preg_match($insert_pattern_3,$query) || preg_match($insert_pattern_4,$query)){
+        || preg_match($insert_pattern_3,$query) || preg_match($insert_pattern_4,$query)
+        || preg_match($insert_pattern_5,$query)){
             foreach($params as $param){
                 // FIXME: Filter the parameters passed using regex, make a better regex because special characters should be able to be inserted
-                if (!preg_match($param,"/([A-Z0-9])*/i")){
+                if (!preg_match("/([A-Z0-9])*/i",$param)){
                     return "BAD VALUES";
                 }
             }          
             if(strtolower($db_type) == strtolower("MySQL")){
+                log_write("Executing MySQL Query: ".$query." With Params: ".implode(",",$params)."");
                 return $this->query($query,$params);
             }elseif(strtolower($db_type) == strtolower("PostgreSQL")){
+                log_write("Executing MySQL Query: ".$query." With Params: ".implode(",",$params)."");
                 return $this->query($query,$params);        
             }
         }
