@@ -12,6 +12,8 @@ Route::set(["index.php",'/'],"homepage");
 //Single route destination example
 Route::set("about",function(){
     
+    // Here We write logic for this url
+
 });
 
 Route::set("test",function(){

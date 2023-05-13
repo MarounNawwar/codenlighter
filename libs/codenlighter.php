@@ -23,7 +23,8 @@ function import($libName){
 
 function get_operating_system() {
     
-    $u_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    $u_agent = PHP_OS;
+    $u_agent = isset($u_agent)? $u_agent : (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '');
     $operating_system = 'Unknown Operating System';
 
     //Get the operating_system name
@@ -32,7 +33,7 @@ function get_operating_system() {
             $operating_system = 'Linux';
         } elseif (preg_match('/macintosh|mac os x|mac_powerpc/i', $u_agent)) {
             $operating_system = 'Mac';
-        } elseif (preg_match('/windows|win32|win98|win95|win16/i', $u_agent)) {
+        } elseif (preg_match('/windows|win32|win98|win95|win16|winnt/i', $u_agent)) {
             $operating_system = 'Windows';
         } elseif (preg_match('/ubuntu/i', $u_agent)) {
             $operating_system = 'Ubuntu';
@@ -89,10 +90,10 @@ function read_config() {
         $lines = file(HTTPD_CONF);
         $config = array();
 
-        foreach ($lines as $l) {
-            preg_match("/^(?P<key>\w+)\s+(?P<value>.*)/", $l, $matches);
-            if (isset($matches['key'])) {
-                $config[$matches['key']] = $matches['value'];
+        foreach ($lines as $line) {
+            if(preg_match("/^[\w]+[\s]*[=][\w]*/i", $line)){
+                $conf = explode('=',$line);
+                $config[trim($conf[0]," ")] = trim($conf[1]," ");
             }
         }
 
@@ -104,10 +105,12 @@ function read_config() {
 
 function get_config_param($param_name,$default_value = "PARAM_NOT_FOUND"){
 
-    //Retrieve the default configurations and the specific modifications
-    //FIXME: This should be retrieved using read_config function
-    $conf = get_configurations_file();
-    
+    // Retrieve the default configurations and the specific modifications
+    // FIXME: This should be retrieved using read_config function
+
+    // $conf = get_configurations_file();
+    $conf = read_config();
+
     if(!array_key_exists($param_name,$conf)){ 
         return $default_value; 
     }

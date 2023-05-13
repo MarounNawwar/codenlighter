@@ -8,44 +8,40 @@ class Route{
 
     //Function to set the valid URL
     private static function access($route,$handler){
-
         if((isset($_GET['url']) && $_GET['url'] == $route) || $route == $_SERVER['REQUEST_URI'] ){
-           
-            if(is_callable($handler)){
-                $handler->__invoke();
-            }else{
-                self::redirect($handler);
+
+            $requested_route = $_SERVER['REQUEST_URI'];
+            $subdirectory = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
+            $route_regex = '#^' . preg_quote($subdirectory . $route, '#') . '\/?(.*)$#';
+
+            if (preg_match($route_regex, $requested_route, $matches)) {
+                if(is_callable($handler)){
+                    $params = array_slice($matches,1);
+                    $handler(...$params);
+                }else{
+                    self::redirect($handler);
+                }
             }
+        }else{
+            //Handle Not Valid Requests
         }
     }
 
     public static function post($route,$function){
-        
         self::$validRoutes[] = $route;
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
-            self::access($route,$function);
-
+            self::set($route,$function);
         }else{
-
             //Handle Not Valid Requests
-
         }
     }
 
     public static function get($route,$function){
-
         self::$validRoutes[] = $route;
-
         if($_SERVER['REQUEST_METHOD'] === 'GET'){
-
-            self::access($route,$function);
-
+            self::set($route,$function);
         }else{
-
             //Handle Not Valid Requests
-
         }
     }
 
@@ -65,20 +61,12 @@ class Route{
     }
 
     public static function any($allowed_methods,$route,$function){
-        
         self::$validRoutes[] = $route;
-
-        if(in_array(strtoupper($_SERVER['REQUEST_METHOD']),$allowed_methods)
-            && in_array($allowed_methods,self::$validMethods)){
-
-            self::access($route,$function);
-            
+        if(in_array(strtoupper($_SERVER['REQUEST_METHOD']),$allowed_methods) && in_array($allowed_methods,self::$validMethods)){
+            self::set($route,$function);
         }else{
-
             //Handle Not Valid Requests
-
         }
-
     }
 
     public static function has_access(){

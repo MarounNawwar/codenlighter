@@ -1,23 +1,25 @@
 <?php
     
-    import("Database");
+    import("Database");    
+    $conn = Database::getConnection();
 
-    // $conn = Database::getConnection();
-
-    // print_r($conn->get_rows_from_db("test_table",[]));
-
-    // $rslt = $conn->validate_query_content("INSERT INTO `test`('val1','val2') VALUES('','')");
-
-    // if($rslt === false){
-    //     echo "Bad Query Structure";
-    // }else{
-    //     echo "Correct Query Structure";
-    // }
+    // $conn->execute_query("INSERT INTO auth_group VALUES (1,'Teststs')");
 
     // $rslt2 = $conn->insert_to("")
-
     // var_dump(read_config());
-
-    echo 'Reached Test';
+    // if(!isset($_SERVER["HTTPS"]) || $_SERVER["HTTPS"] != "on" ){
+    //     $headers = @get_headers($url);
+    //     if($headers && strpos( $headers[0], '200')) {
+    //         header("Location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"], true, 301);
+    //     }
+    //     else {
+    //         $status = "URL Doesn't Exist";
+    //         echo $status;
+    //     }
+    // }
+    // import("Authentication");
+    // $auth = Authentication::getInstance();
+    // $res = $auth->create_user("maroun","nawwar","nawwarmaroun@gmail.com","12345");
+    // var_dump($res);
 
 ?>
