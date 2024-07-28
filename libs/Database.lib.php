@@ -40,7 +40,7 @@ class DataBase{
     
     }
 
-    public function closeConnection(){
+    public function close(){
         if(isset($this->pdo)) unset($this->pdo);
         if(isset($instance)) unset($instance);
         log_write("Connection of Database closed");
@@ -123,11 +123,15 @@ class DataBase{
 
     }
 
-    //Function to execute a query in the database
-    //Returns an array of elements if the query is of type "SELECT".
-    //Returns the Id of the new inserted row if the query is of type "INSERT".
-    //Returns an integer that represents the number of rows affected by a query of type "DELETE".
-    //Returns a boolean result that show the success/fail of a query if it is of type "UPDATE".
+    /**
+     * Function to execute a query in the database
+     *   @param query : The query to be executed
+     *   @param param : All the params used in the params
+     *   @return Array of elements if the query is of type "SELECT".
+     *   @return ID of the new inserted row if the query is of type "INSERT".
+     *   @return Integer that represents the number of rows affected by a query of type "DELETE".
+     *   @return Boolean result that show the success/fail of a query if it is of type "UPDATE".
+     */
     private function query($query,$params = array()){
         //All Possible Query Types
         $query_types = array("SELECT","INSERT","DELETE","UPDATE");
@@ -210,10 +214,12 @@ class DataBase{
         }        
     }
 
-    // Function to get rows from database
-    // @param 1: Table Name in database
-    // @param 2: Parameters wanted (Not mandatory)
-    // @Returns: 2-dimensional array containing fetched rows
+    /**
+     * Function to get rows from database
+     *  @param  table Name in database
+     *  @param  parameters wanted (Not mandatory)
+     *  @return 2-dimensional array containing fetched rows
+     */
     public function get_rows_from_db($table,$parameters = ["*"]){
 
         $cnt = 0;
@@ -311,16 +317,15 @@ class DataBase{
  
     } 
 
-    // Function to insert to database
-    // @param 1: Query that is targetted 
-    // @param 2: Values expected
     public function insert_to($query,$params = []){
         // $db_type = "MySQL";
     }
 
-    // Function to execute a query
-    // @Param 1: Query to be executed
-    // @Param 2: Params to be fetched
+    /**
+     * Function to insert to database
+     * @param query that is targetted 
+     * @param params expected to pass
+    */
     public function execute_query($query,$params = []){
         
         $db_type = get_config_param("Database");
@@ -331,6 +336,7 @@ class DataBase{
         //This Regular expression allows to make sure that the query has a valid structure;        
         // FIXME: We still have to add to the regex the SQL Keywords in the WHERE Statement in the insert_pattern_2 variable 
         // FIXME: Make a better regex because special characters should be able to be inserted
+
         $insert_pattern_1 = "/INSERT INTO[ ]+[`]*[a-zA-z0-9_]*[`]*[ ]*\([`a-zA-Z0-9_, ]+\)[ ]+VALUES[ ]*\([a-zA-Z0-9_,?'\"` ]+\)[;]?/i";
         $insert_pattern_2 = "/INSERT INTO[ ]+[`]*[a-zA-z0-9_]*[`]*[ ]*\([`a-zA-Z0-9_, ]+\)[ ]*SELECT[ ]+[a-zA-Z0-9_,?'\"\s+` ]+[ ]+FROM[ ]+[`]*[a-zA-z0-9_]*[ ]*[WHERE[ ]*[a-zA-Z0-9_,?'\"\s+` ]+[ ]*[=]*[ ]*[\"|\']*[a-zA-Z0-9_,?'\"\s+`]*[ ]*]?[;]?/";
         $insert_pattern_3 = "/INSERT INTO[ ]+[`]*[a-zA-z0-9_]*[`]*[ ]*VALUES[ ]*\([a-zA-Z0-9_,?'\"` ]+\)[;]?/i";
@@ -340,18 +346,23 @@ class DataBase{
         if(preg_match($insert_pattern_1,$query) || preg_match($insert_pattern_2,$query) 
         || preg_match($insert_pattern_3,$query) || preg_match($insert_pattern_4,$query)
         || preg_match($insert_pattern_5,$query)){
+
             foreach($params as $param){
                 // FIXME: Filter the parameters passed using regex, make a better regex because special characters should be able to be inserted
                 if (!preg_match("/([A-Z0-9])*/i",$param)){
                     return "BAD VALUES";
                 }
-            }          
-            if(strtolower($db_type) == strtolower("MySQL")){
-                log_write("Executing MySQL Query: ".$query." With Params: ".implode(",",$params)."");
-                return $this->query($query,$params);
-            }elseif(strtolower($db_type) == strtolower("PostgreSQL")){
-                log_write("Executing MySQL Query: ".$query." With Params: ".implode(",",$params)."");
-                return $this->query($query,$params);        
+            }    
+            try {
+                if(strtolower($db_type) == strtolower("MySQL")){
+                    log_write("Executing MySQL Query: ".$query." With Params: ".implode(",",$params)."");
+                    return $this->query($query,$params);
+                }elseif(strtolower($db_type) == strtolower("PostgreSQL")){
+                    return $this->query($query,$params);        
+                }
+            }catch(Exception $e){
+                log_error("Error Occured while executing query: $query... Rolling Back All Executed Queries!");
+                return "DB_EXCEPTION";
             }
         }
     }
