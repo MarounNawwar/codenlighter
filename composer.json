@@ -1,4 +1,7 @@
 {
+    "name": "codenlighter/codenlighter",
+    "description": "Codenlighter is a customized lightweight PHP framework for web development.",
+    "license": "proprietary",
     "require": {
         "php":"^8.1.0"
     },
