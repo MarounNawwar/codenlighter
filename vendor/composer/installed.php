@@ -1,24 +1,15 @@
 <?php return array(
     'root' => array(
-        'name' => '__root__',
+        'name' => 'codenlighter/codenlighter',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '69b9e074865e78d50c22eb828b7b232332bba5d0',
+        'reference' => 'c042ab5e3b7727916be3e8d03b3c58575766e635',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'dev' => true,
     ),
     'versions' => array(
-        '__root__' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => '69b9e074865e78d50c22eb828b7b232332bba5d0',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../../',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
         'behat/gherkin' => array(
             'pretty_version' => 'v4.9.0',
             'version' => '4.9.0.0',
@@ -96,6 +87,15 @@
             'install_path' => __DIR__ . '/../codeception/stub',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'codenlighter/codenlighter' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'c042ab5e3b7727916be3e8d03b3c58575766e635',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'guzzlehttp/guzzle' => array(
             'pretty_version' => '7.9.2',
